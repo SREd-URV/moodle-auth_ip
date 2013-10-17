@@ -1,0 +1,52 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Configuration settings form
+ *
+ * @package    auth
+ * @subpackage ip
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author     Robert Boloc <robert.boloc@urv.cat>
+ * @author     Jordi Pujol-Ahulló <jordi.pujol@urv.cat>
+ * @copyright 2013 onwards Servei de Recursos Educatius (http://www.sre.urv.cat)
+ */
+
+
+// set to defaults if undefined
+if (!isset($config->valid_ips)) {
+    $config->valid_ips = '';
+}
+
+?>
+
+<table cellspacing="0" cellpadding="5" border="0">
+<tr valign="top">
+    <td align="right"><?php print_string('auth_ipvalidips', 'auth_ip') ?></td>
+    <td>
+        <textarea name="valid_ips" cols="70" rows="10"><?php echo $config->valid_ips ?></textarea>
+        <br>
+        <?php
+        print_string('auth_ipexampleips', 'auth_ip');
+        if (isset($err['valid_ips'])) {
+            formerr($err['valid_ips']);
+        }
+        ?>
+        </td>
+    <td></td>
+</tr>
+</table>
+
