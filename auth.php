@@ -31,12 +31,12 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->libdir.'/authlib.php');
+require_once($CFG->dirroot.'/auth/manual/auth.php');
 
 /**
  * Auth plugin to allow login only from restricted IPs.
  */
-class auth_plugin_ip extends auth_plugin_base {
+class auth_plugin_ip extends auth_plugin_manual {
 
     /**
      * Constructor
@@ -71,25 +71,6 @@ class auth_plugin_ip extends auth_plugin_base {
     }
 
     /**
-     * Updates the user's password.
-     *
-     * called when the user password is updated.
-     *
-     * @param  object  $user        User table object  (with system magic quotes)
-     * @param  string  $newpassword Plaintext password (with system magic quotes)
-     * @return boolean result
-     *
-     */
-    function user_update_password($user, $newpassword) {
-        $user = get_complete_user_data('id', $user->id);
-        return update_internal_user_password($user, $newpassword);
-    }
-
-    function prevent_local_passwords() {
-        return false;
-    }
-
-    /**
      * Returns true if this authentication plugin is 'internal'.
      *
      * @return bool
@@ -99,44 +80,18 @@ class auth_plugin_ip extends auth_plugin_base {
     }
 
     /**
-     * Returns true if this authentication plugin can change the user's
-     * password.
-     *
-     * @return bool
-     */
-    function can_change_password() {
-        return true;
-    }
-
-    /**
-     * Returns the URL for changing the user's pw, or empty if the default can
-     * be used.
-     *
-     * @return string
-     */
-    function change_password_url() {
-        return '';
-    }
-
-    /**
-     * Returns true if plugin allows resetting of internal password.
-     *
-     * @return bool
-     */
-    function can_reset_password() {
-        return true;
-    }
-
-    /**
      * Prints a form for configuring this authentication plugin.
      *
      * This function is called from admin/auth.php, and outputs a full page with
      * a form for configuring this plugin.
      *
-     * @param array $page An object containing all the data for this page.
+     * @param array $config An object containing all the data for this page.
+     * @param string $error
+     * @param array $user_fields
+     * @return void
      */
     function config_form($config, $err, $user_fields) {
-        include "config.html";
+        include 'config.html';
     }
 
     /**
