@@ -38,12 +38,9 @@ require_once($CFG->dirroot.'/auth/manual/auth.php');
  */
 class auth_plugin_ip extends auth_plugin_manual {
 
-    /**
-     * Constructor
-     */
     function __construct() {
         $this->authtype = 'ip';
-        $this->config = get_config('auth_ip');
+        $this->config   = get_config('auth_ip');
     }
 
     /**
@@ -57,17 +54,64 @@ class auth_plugin_ip extends auth_plugin_manual {
     function user_login($username, $password) {
         global $DB, $CFG;
         if (($user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id)))) {
-            $valid_ips = explode(',', $this->config->valid_ips);
-            //check if IP is one of the restricted ones.
-            $remote_addr = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
-            if (isset($remote_addr) && in_array($remote_addr, $valid_ips)) {
+            // Check if IP is one of the restricted ones.
+            $userIp = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+
+            if (isset($userIp) && $this->is_ip_valid($userIp)) {
                 return validate_internal_user_password($user, $password);
             } else {
                 return false;
             }
         }
-        // if no valid username, we do not allow to create a new user using this auth type.
+        // If no valid username, we do not allow to create a new user using this auth type.
         return false;
+    }
+
+    /**
+     * Determine if the $ip is in the allowed list of IP or CIDR.
+     *
+     * @see https://secure.php.net/manual/en/ref.network.php#74656
+     * @param $ip
+     * @return bool
+     */
+    function is_ip_valid($ip) {
+        // List of allowed IP addresses or CIDR ranges
+        $valid_ips_or_cidrs = explode(',', str_replace(' ', '', $this->config->valid_ips));
+
+        // Check all the allowed IP or CIDR for matches
+        foreach ($valid_ips_or_cidrs as $valid_ip_or_cidr) {
+            // If CIDR check if in range
+            if ($this->is_cidr($valid_ip_or_cidr)) {
+                list ($net, $mask) = explode('/', $valid_ip_or_cidr);
+
+                $ip_net  = ip2long($net);
+                $ip_mask = ~((1 << (32 - $mask)) - 1);
+
+                $ip_ip = ip2long($ip);
+
+                $ip_ip_net = $ip_ip & $ip_mask;
+
+                if ($ip_ip_net === $ip_net) {
+                    return true;
+                }
+            // Simple IP compare with equality
+            } elseif ($valid_ip_or_cidr === $ip) {
+                return true;
+            }
+        }
+
+        // No match found mark as not allowed
+        return false;
+    }
+
+    /**
+     * Check if a string is a CIDR.
+     *
+     * @param string $ip_or_cidr
+     * @return bool
+     */
+    function is_cidr($ip_or_cidr) {
+        return strpos($ip_or_cidr, '/') > 0;
     }
 
     /**
@@ -90,7 +134,7 @@ class auth_plugin_ip extends auth_plugin_manual {
      * @param array $user_fields
      * @return void
      */
-    function config_form($config, $err, $user_fields) {
+    function config_form($config, $error, $user_fields) {
         include 'config.html';
     }
 
