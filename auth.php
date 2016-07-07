@@ -101,11 +101,15 @@ class auth_plugin_ip extends auth_plugin_manual {
      * @return bool True | false.
      */
     public function should_display_error() {
-        if ($this->config->check_before_login && !remoteip_in_list($this->config->valid_ips)) {
-            return true;
+        if (!$this->config->check_before_login) {
+            return false;
         }
 
-        return false;
+        if (remoteip_in_list($this->config->valid_ips)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -113,6 +117,8 @@ class auth_plugin_ip extends auth_plugin_manual {
      */
     public function print_error_message() {
         global $SITE, $PAGE, $OUTPUT;
+
+        header('HTTP/1.0 403 Forbidden');
 
         $PAGE->set_pagetype('maintenance-message');
         $PAGE->set_pagelayout('standard');
