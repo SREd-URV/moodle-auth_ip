@@ -53,14 +53,17 @@ class auth_plugin_ip extends auth_plugin_manual {
      */
     public function user_login($username, $password) {
         global $DB, $CFG;
-        if (($user = $DB->get_record('user', array('username' => $username, 'mnethostid' => $CFG->mnet_localhost_id)))) {
 
-            if (remoteip_in_list($this->config->valid_ips)) {
-                return validate_internal_user_password($user, $password);
-            } else {
-                return false;
+        if ($this->should_display_error()) {
+            $this->print_error_message();
+        } else {
+            if (($user = $DB->get_record('user', array('username' => $username, 'mnethostid' => $CFG->mnet_localhost_id)))) {
+                if (remoteip_in_list($this->config->valid_ips)) {
+                    return validate_internal_user_password($user, $password);
+                }
             }
         }
+
         // If no valid username, we do not allow to create a new user using this auth type.
         return false;
     }
@@ -72,6 +75,60 @@ class auth_plugin_ip extends auth_plugin_manual {
      */
     public function is_internal() {
         return false;
+    }
+
+    /**
+     * Implements loginpage_hook().
+     */
+    public function loginpage_hook() {
+        if ($this->should_display_error()) {
+            $this->print_error_message();
+        }
+    }
+
+    /**
+     * Implements pre_loginpage_hook().
+     */
+    public function pre_loginpage_hook() {
+        if ($this->should_display_error()) {
+            $this->print_error_message();
+        }
+    }
+
+    /**
+     * Check if we should display error message to a user.
+     *
+     * @return bool True | false.
+     */
+    public function should_display_error() {
+        if ($this->config->check_before_login && !remoteip_in_list($this->config->valid_ips)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Prints an error message.
+     */
+    public function print_error_message() {
+        global $SITE, $PAGE, $OUTPUT;
+
+        $PAGE->set_pagetype('maintenance-message');
+        $PAGE->set_pagelayout('standard');
+        $PAGE->set_title(strip_tags($SITE->fullname));
+
+        echo $OUTPUT->header();
+
+        $renderer = $PAGE->get_renderer('auth_ip');
+
+        if (isset($this->config->error_text) and !html_is_blank($this->config->error_text)) {
+            echo $renderer->render_error_message($this->config->error_text);
+        }
+
+        echo $OUTPUT->footer();
+
+        die;
     }
 
 }
