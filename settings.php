@@ -19,34 +19,27 @@
  *
  * @package    auth
  * @subpackage ip
+ * @copyright  2016 Dmitrii Metelkin (dmitriim@catalyst-au.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @author     Robert Boloc <robert.boloc@urv.cat>
- * @author     Jordi Pujol-Ahulló <jordi.pujol@urv.cat>
- * @copyright 2013 onwards Servei de Recursos Educatius (http://www.sre.urv.cat)
  */
 
+defined('MOODLE_INTERNAL') || die;
 
-// set to defaults if undefined
-if (!isset($config->valid_ips)) {
-    $config->valid_ips = '';
+if ($ADMIN->fulltree) {
+
+    require_once($CFG->dirroot . '/auth/ip/auth.php');
+
+    $options = array(get_string('no'), get_string('yes'));
+
+    $settings->add(new admin_setting_configiplist('auth_ip/valid_ips',
+        new lang_string('auth_ipvalidips', 'auth_ip'),
+        new lang_string('ipblockersyntax', 'admin'), ''));
+
+    $settings->add(new admin_setting_configselect('auth_ip/check_before_login',
+        get_string('auth_ipcheckbeforelogin', 'auth_ip'),
+        get_string('auth_ipcheckbeforelogin_desc', 'auth_ip'), 0, $options));
+
+    $settings->add(new admin_setting_confightmleditor('auth_ip/error_text',
+        new lang_string('auth_iperrortext', 'auth_ip'),
+        new lang_string('auth_iperrortext_desc', 'auth_ip'), ''));
 }
-
-?>
-
-<table cellspacing="0" cellpadding="5" border="0">
-<tr valign="top">
-    <td align="right"><?php print_string('auth_ipvalidips', 'auth_ip') ?></td>
-    <td>
-        <textarea name="valid_ips" cols="70" rows="10"><?php echo $config->valid_ips ?></textarea>
-        <br>
-        <?php
-        print_string('auth_ipexampleips', 'auth_ip');
-        if (isset($err['valid_ips'])) {
-            formerr($err['valid_ips']);
-        }
-        ?>
-        </td>
-    <td></td>
-</tr>
-</table>
-
