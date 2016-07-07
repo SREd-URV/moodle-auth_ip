@@ -27,9 +27,10 @@ defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
 
-    require_once($CFG->dirroot . '/auth/ip/auth.php');
+    require_once($CFG->dirroot . '/auth/ip/renderer.php');
 
     $options = array(get_string('no'), get_string('yes'));
+    $placeholders = implode(', ', array_keys(auth_ip_renderer::get_placeholders_data()));
 
     $settings->add(new admin_setting_configiplist('auth_ip/valid_ips',
         new lang_string('auth_ipvalidips', 'auth_ip'),
@@ -41,5 +42,5 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_confightmleditor('auth_ip/error_text',
         new lang_string('auth_iperrortext', 'auth_ip'),
-        new lang_string('auth_iperrortext_desc', 'auth_ip'), ''));
+        new lang_string('auth_iperrortext_desc', 'auth_ip', $placeholders), ''));
 }

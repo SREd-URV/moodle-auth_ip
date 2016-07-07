@@ -33,5 +33,5 @@ $string['auth_ipvalidips'] = 'Valid IPs';
 $string['auth_ipcheckbeforelogin'] = 'Check IP before logging in';
 $string['auth_ipcheckbeforelogin_desc'] = 'If this setting is enabled then users will see error message before they saw a login page.';
 $string['auth_iperrortext'] = 'Error text';
-$string['auth_iperrortext_desc'] = 'This text will be displayed to users if "Check IP before logging in" option is enabled';
+$string['auth_iperrortext_desc'] = 'This text will be displayed to users if "Check IP before logging in" option is enabled. <br /> Placeholders can be used: {$a}';
 $string['pluginname'] = 'Authentication by IP';
