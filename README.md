@@ -29,9 +29,11 @@ Updating the list of restricted IPs:
 * Go to Administration->Plugins->Authentication->Manage plugins
 * Update the list of IPs
 
-NOTE: After updating the list of IPs, an email will be sent to the administrator email,
-just for security.
-
+Preventing all users() log in if their ip fails whitelist
+* Go to Administration->Plugins->Authentication->Manage plugins
+* Set "Check IP before logging in" to yes.
+* Update Error text message.
+* Optionally you can log out all currently logged in users who's ip address fail whitelist.
 
 License
 ---

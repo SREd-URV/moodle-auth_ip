@@ -38,7 +38,7 @@ require_once($CFG->dirroot.'/auth/manual/auth.php');
  */
 class auth_plugin_ip extends auth_plugin_manual {
 
-    function __construct() {
+    public function __construct() {
         $this->authtype = 'ip';
         $this->config   = get_config('auth_ip');
     }
@@ -51,67 +51,21 @@ class auth_plugin_ip extends auth_plugin_manual {
      * @param string $password password
      * @return bool
      */
-    function user_login($username, $password) {
+    public function user_login($username, $password) {
         global $DB, $CFG;
-        if (($user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id)))) {
-            // Check if IP is one of the restricted ones.
-            $userIp = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
 
-            if (isset($userIp) && $this->is_ip_valid($userIp)) {
-                return validate_internal_user_password($user, $password);
-            } else {
-                return false;
+        if ($this->should_display_error()) {
+            $this->print_error_message();
+        } else {
+            if (($user = $DB->get_record('user', array('username' => $username, 'mnethostid' => $CFG->mnet_localhost_id)))) {
+                if (remoteip_in_list($this->config->valid_ips)) {
+                    return validate_internal_user_password($user, $password);
+                }
             }
         }
+
         // If no valid username, we do not allow to create a new user using this auth type.
         return false;
-    }
-
-    /**
-     * Determine if the $ip is in the allowed list of IP or CIDR.
-     *
-     * @see https://secure.php.net/manual/en/ref.network.php#74656
-     * @param $ip
-     * @return bool
-     */
-    function is_ip_valid($ip) {
-        // List of allowed IP addresses or CIDR ranges
-        $valid_ips_or_cidrs = explode(',', str_replace(' ', '', $this->config->valid_ips));
-
-        // Check all the allowed IP or CIDR for matches
-        foreach ($valid_ips_or_cidrs as $valid_ip_or_cidr) {
-            // If CIDR check if in range
-            if ($this->is_cidr($valid_ip_or_cidr)) {
-                list ($net, $mask) = explode('/', $valid_ip_or_cidr);
-
-                $ip_net  = ip2long($net);
-                $ip_mask = ~((1 << (32 - $mask)) - 1);
-
-                $ip_ip = ip2long($ip);
-
-                $ip_ip_net = $ip_ip & $ip_mask;
-
-                if ($ip_ip_net === $ip_net) {
-                    return true;
-                }
-            // Simple IP compare with equality
-            } elseif ($valid_ip_or_cidr === $ip) {
-                return true;
-            }
-        }
-
-        // No match found mark as not allowed
-        return false;
-    }
-
-    /**
-     * Check if a string is a CIDR.
-     *
-     * @param string $ip_or_cidr
-     * @return bool
-     */
-    function is_cidr($ip_or_cidr) {
-        return strpos($ip_or_cidr, '/') > 0;
     }
 
     /**
@@ -119,47 +73,199 @@ class auth_plugin_ip extends auth_plugin_manual {
      *
      * @return bool
      */
-    function is_internal() {
+    public function is_internal() {
         return false;
     }
 
     /**
-     * Prints a form for configuring this authentication plugin.
-     *
-     * This function is called from admin/auth.php, and outputs a full page with
-     * a form for configuring this plugin.
-     *
-     * @param array $config An object containing all the data for this page.
-     * @param string $error
-     * @param array $user_fields
-     * @return void
+     * Implements loginpage_hook().
      */
-    function config_form($config, $error, $user_fields) {
-        include 'config.html';
+    public function loginpage_hook() {
+        if ($this->should_display_error()) {
+            $this->print_error_message();
+        }
     }
 
     /**
-     * Updates the list of IPs and sends a notification by email.
-     *
-     * @param object $config configuration settings
-     * @return boolean always true.
+     * Implements pre_loginpage_hook().
      */
-    function process_config($config) {
+    public function pre_loginpage_hook() {
+        if ($this->should_display_error()) {
+            $this->print_error_message();
+        }
+    }
 
-        global $CFG;
-
-        // set to defaults if undefined
-        if (!isset ($config->valid_ips)) {
-            $config->valid_ips = '';
+    /**
+     * Check if we should display error message to a user.
+     *
+     * @return bool True | false.
+     */
+    public function should_display_error() {
+        if (!$this->config->check_before_login) {
+            return false;
         }
 
-        //saving new configuration settings
-        set_config('valid_ips', str_replace(' ', '', $config->valid_ips), 'auth_ip');
-
-        //notify administrator for the settings changed for security.
-        mail($CFG->supportemail, get_string('auth_ipmailsubject', 'auth_ip'),
-                get_string('auth_ipmailtext', 'auth_ip').' : '.$config->valid_ips);
+        if (remoteip_in_list($this->config->valid_ips)) {
+            return false;
+        }
 
         return true;
     }
+
+    /**
+     * Prints an error message.
+     */
+    public function print_error_message() {
+        global $SITE, $PAGE, $OUTPUT, $SESSION;
+
+        header('HTTP/1.0 403 Forbidden');
+
+        if (!isset($PAGE->context)) {
+            $PAGE->set_context(context_system::instance());
+        }
+
+        if (!isset($PAGE->url)) {
+            if (isset($SESSION->wantsurl)) {
+                $PAGE->set_url($SESSION->wantsurl);
+            } else {
+                $PAGE->set_url('/');
+            }
+        }
+
+        $PAGE->set_pagetype('maintenance-message');
+        $PAGE->set_pagelayout('standard');
+        $PAGE->set_title(strip_tags($SITE->fullname));
+
+        echo $OUTPUT->header();
+
+        $renderer = $PAGE->get_renderer('auth_ip');
+
+        if (isset($this->config->error_text) and !html_is_blank($this->config->error_text)) {
+            echo $renderer->render_error_message($this->config->error_text);
+        }
+
+        echo $OUTPUT->footer();
+
+        die;
+    }
+
+    /**
+     * Check if provided IP is in provided list of IPs.
+     *
+     * @param string $list A list of IPs or subnet addresses.
+     * @param string $ip IP address.
+     *
+     * @return bool
+     */
+    public static function is_ip_in_list($list, $ip) {
+        $inlist = false;
+
+        $list = explode("\n", $list);
+        foreach ($list as $subnet) {
+            $subnet = trim($subnet);
+            if (address_in_subnet($ip, $subnet)) {
+                $inlist = true;
+                break;
+            }
+        }
+
+        return $inlist;
+    }
+
+    /**
+     * Return SQL data to get all active user sessions from DB.
+     *
+     * @return array Array of the first element is SQL and the second element is params.
+     */
+    protected function get_active_sessions_sql_data() {
+        global $CFG;
+
+        $sql = "SELECT s.id, s.sid, s.userid, s.timecreated, s.timemodified, s.firstip, s.lastip
+                FROM {sessions} s
+                WHERE s.timemodified > :activebefore";
+
+        $params = array(
+            'activebefore' => time() - $CFG->sessiontimeout,
+        );
+
+        return array($sql, $params);
+    }
+
+    /**
+     * Return a record set of all active user sessions.
+     *
+     * @return moodle_recordset A moodle_recordset instance of active sessions.
+     */
+    public function get_active_sessions_recordset() {
+        global $DB;
+        $sqldata = $this->get_active_sessions_sql_data();
+
+        return $DB->get_recordset_sql($sqldata[0], $sqldata[1]);
+    }
+
+    /**
+     * Return a number of currently active user sessions.
+     *
+     * @return int A number of sessions.
+     */
+    public function count_active_sessions() {
+        global $DB;
+
+        $sqldata = $this->get_active_sessions_sql_data();
+
+        return $DB->count_records_select('sessions', 'timemodified > :activebefore', $sqldata[1]);
+    }
+
+    /**
+     * Check if provided user session should be killed.
+     *
+     * @param object $session A record from {sessions} table.
+     *
+     * @return bool
+     */
+    public function should_kill_session($session) {
+        global $USER;
+
+        if ($session->userid == $USER->id) {
+            return false;
+        }
+
+        if (self::is_ip_in_list($this->config->valid_ips, $session->lastip)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Kill all required active sessions.
+     *
+     * @param \progress_bar|null $progressbar Optional progress bar instance for using in UI.
+     */
+    public function kill_active_sessions(progress_bar $progressbar = null) {
+        $sessions = $this->get_active_sessions_recordset();
+        $sessionscount = $this->count_active_sessions();
+
+        $done = 0;
+        $strinprogress = get_string('auth_iplogoutinprogress', 'auth_ip');
+
+        foreach ($sessions as $session) {
+            if ($this->should_kill_session($session)) {
+                \core\session\manager::kill_session($session->sid);
+
+                if (!is_null($progressbar)) {
+                    $done++;
+                    $donepercent = floor(min($done, $sessionscount) / $sessionscount * 100);
+                    $progressbar->update_full($donepercent, $strinprogress);
+                }
+            }
+        }
+
+        $sessions->close();
+
+        if (!is_null($progressbar)) {
+            $progressbar->update_full(100, get_string('auth_iplogoutdone', 'auth_ip', $done));
+        }
+    }
+
 }
