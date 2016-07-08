@@ -53,7 +53,7 @@ class auth_ip_renderer extends plugin_renderer_base {
         $config = get_config('auth_ip');
 
         return array(
-            '[[valid_ips]]' => $config->valid_ips,
+            '[[valid_ips]]' => isset($config->valid_ips) ? $config->valid_ips : '',
             '[[your_ip]]' => getremoteaddr(),
         );
     }
