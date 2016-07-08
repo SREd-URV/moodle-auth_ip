@@ -116,9 +116,21 @@ class auth_plugin_ip extends auth_plugin_manual {
      * Prints an error message.
      */
     public function print_error_message() {
-        global $SITE, $PAGE, $OUTPUT;
+        global $SITE, $PAGE, $OUTPUT, $SESSION;
 
         header('HTTP/1.0 403 Forbidden');
+
+        if (!isset($PAGE->context)) {
+            $PAGE->set_context(context_system::instance());
+        }
+
+        if (!isset($PAGE->url)) {
+            if (isset($SESSION->wantsurl)) {
+                $PAGE->set_url($SESSION->wantsurl);
+            } else {
+                $PAGE->set_url('/');
+            }
+        }
 
         $PAGE->set_pagetype('maintenance-message');
         $PAGE->set_pagelayout('standard');
