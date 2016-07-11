@@ -370,4 +370,32 @@ class auth_ip_testcase extends advanced_testcase {
         $this->assertEquals($expected, $actual);
     }
 
+    /**
+     * Test that the plugin kills only active sessions and keeps current user's session.
+     */
+    public function test_kill_only_active_sessions_but_keep_current_user() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->generate_sessions();
+        $this->authplugin->config->valid_ips = '192.168.1.5';
+
+        $this->authplugin->kill_active_sessions();
+
+        $sessions = $DB->get_records('sessions', array(), '', 'sid, id, userid');
+
+        $this->assertEquals(5, count($sessions));
+
+        $this->assertFalse(array_key_exists(md5('session1'), $sessions));
+        $this->assertFalse(array_key_exists(md5('session3'), $sessions));
+        $this->assertFalse(array_key_exists(md5('session5'), $sessions));
+
+
+        $this->assertTrue(array_key_exists(md5('session2'), $sessions));
+        $this->assertTrue(array_key_exists(md5('session4'), $sessions));
+        $this->assertTrue(array_key_exists(md5('session6'), $sessions));
+        $this->assertTrue(array_key_exists(md5('session7'), $sessions));
+        $this->assertTrue(array_key_exists(md5('session8'), $sessions));
+    }
+
 }

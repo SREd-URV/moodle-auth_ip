@@ -212,5 +212,19 @@ class auth_plugin_ip extends auth_plugin_manual {
         return true;
     }
 
+    /**
+     * Kill all required active sessions.
+     */
+    public function kill_active_sessions() {
+        $sessions = $this->get_active_sessions_rs();
+
+        foreach ($sessions as $session) {
+            if ($this->should_kill_session($session)) {
+                \core\session\manager::kill_session($session->sid);
+            }
+        }
+
+        $sessions->close();
+    }
 
 }
