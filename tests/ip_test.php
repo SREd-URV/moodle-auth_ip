@@ -186,4 +186,41 @@ class auth_ip_testcase extends advanced_testcase {
 
         $this->assertEquals($expected, $actual);
     }
+
+    /**
+     * A list of data to test displaying an error message against.
+     *
+     * @return array
+     */
+    public static function is_ip_in_list_data_provider() {
+        return array(
+            array("192.168.1.1\n192.168.1.2", '192.168.1.1', true),
+            array("192.168.1.1\n192.168.1.2", '192.168.1.3', false),
+            array("192.168.0.0/24", '192.168.0.200', true),
+            array("111.112.0.0/12\n96.0.0.0/6", '192.168.0.200', false),
+            array("111.112.0.0/12\n96.0.0.0/6", '99.255.255.254', true),
+            array("111.112.0.0/12\n10.40.22.0/24\n96.0.0.0/6", '10.40.22.50', true),
+            array("111.112.0.0/12\n 10.40.22.0/24\n 96.0.0.0/6", '10.40.22.50', true),
+            array("  111.112.0.0  ", '111.112.0.0', true),
+            array("192.168.1.1-200", '192.168.1.50', true),
+            array("192.168.1.1-200", '192.168.1.201', false),
+        );
+    }
+
+    /**
+     * Check that we function is_ip_in_list() can check if ip is in list.
+     *
+     * @dataProvider is_ip_in_list_data_provider
+     *
+     * @param array $ips
+     * @param string  $ip
+     * @param boolean $inlist
+     */
+    public function test_is_ip_in_list_function($ips, $ip, $inlist) {
+        $this->assertEquals(
+            $inlist,
+            auth_plugin_ip::is_ip_in_list($ips, $ip)
+        );
+    }
+
 }

@@ -149,4 +149,27 @@ class auth_plugin_ip extends auth_plugin_manual {
         die;
     }
 
+    /**
+     * Check if provided IP is in provided list of IPs.
+     *
+     * @param string $list A list of IPs or subnet addresses.
+     * @param string $ip IP address.
+     *
+     * @return bool
+     */
+    public static function is_ip_in_list($list, $ip) {
+        $inlist = false;
+
+        $list = explode("\n", $list);
+        foreach ($list as $subnet) {
+            $subnet = trim($subnet);
+            if (address_in_subnet($ip, $subnet)) {
+                $inlist = true;
+                break;
+            }
+        }
+
+        return $inlist;
+    }
+
 }
