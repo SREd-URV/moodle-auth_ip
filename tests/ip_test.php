@@ -319,4 +319,42 @@ class auth_ip_testcase extends advanced_testcase {
         $this->assertTrue(array_key_exists($r7, $actuallist));
     }
 
+
+    /**
+     * Data provided for test of should_kill_session().
+     *
+     * @return array
+     */
+    public function should_kill_session_data_provider() {
+        return array(
+            array(0, '192.168.1.1', '192.168.1.1-100', false),
+            array(0, '192.168.1.101', '192.168.1.1-100', false),
+            array(2, '192.168.1.2', '192.168.1.1-100', false),
+            array(2, '192.168.1.200', '192.168.1.1-100', true),
+        );
+    }
+
+    /**
+     * Test that should_kill_session() function works as expected.
+     *
+     * @dataProvider should_kill_session_data_provider
+     *
+     * @param $userid
+     * @param $ip
+     * @param $ips
+     * @param $expected
+     */
+    public function test_should_kill_session_($userid, $ip, $ips, $expected) {
+        $this->resetAfterTest();
+        $this->authplugin->config->valid_ips = $ips;
+        $this->setUser(0);
+
+        $session = new \stdClass();
+        $session->userid = $userid;
+        $session->firstip = $session->lastip = $ip;
+
+        $actual = $this->authplugin->should_kill_session($session);
+        $this->assertEquals($expected, $actual);
+    }
+
 }

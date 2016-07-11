@@ -190,4 +190,27 @@ class auth_plugin_ip extends auth_plugin_manual {
 
         return $DB->get_recordset_sql($sql, $params);
     }
+
+    /**
+     * Check if provided user session should be killed.
+     *
+     * @param object $session A record from {sessions} table.
+     *
+     * @return bool
+     */
+    public function should_kill_session($session) {
+        global $USER;
+
+        if ($session->userid == $USER->id) {
+            return false;
+        }
+
+        if ($this->is_ip_in_list($this->config->valid_ips, $session->lastip)) {
+            return false;
+        }
+
+        return true;
+    }
+
+
 }
