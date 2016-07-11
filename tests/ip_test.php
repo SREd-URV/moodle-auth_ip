@@ -223,13 +223,9 @@ class auth_ip_testcase extends advanced_testcase {
         );
     }
 
-    /**
-     * Test that the plugin can retrieve all current session from DB.
-     */
-    public function test_can_get_all_active_sessions() {
-        global $CFG, $DB, $USER;
 
-        $this->resetAfterTest();
+    public function generate_sessions() {
+        global $CFG, $DB, $USER;
 
         $this->setAdminUser();
         $adminid = $USER->id;
@@ -243,7 +239,7 @@ class auth_ip_testcase extends advanced_testcase {
 
         $record = new \stdClass();
         $record->state = 0;
-        $record->firstip = $record->lastip = '10.0.0.1';
+        $record->firstip = $record->lastip = '192.168.1.1';
 
         // Admin active.
         $record->sid          = md5('session1');
@@ -251,56 +247,73 @@ class auth_ip_testcase extends advanced_testcase {
         $record->userid       = $adminid;
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 30;
-        $r1 = $DB->insert_record('sessions', $record);
+        $DB->insert_record('sessions', $record);
 
         // Admin not active.
         $record->sid          = md5('session2');
         $record->userid       = $adminid;
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 60 * 20;
-        $r2 = $DB->insert_record('sessions', $record);
+        $DB->insert_record('sessions', $record);
 
         // Guest active.
         $record->sid          = md5('session3');
         $record->userid       = $guestid;
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 30;
-        $r3 = $DB->insert_record('sessions', $record);
+        $DB->insert_record('sessions', $record);
 
         // Guest not active.
         $record->sid          = md5('session4');
         $record->userid       = $guestid;
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 60 * 20;
-        $r4 = $DB->insert_record('sessions', $record);
+        $DB->insert_record('sessions', $record);
 
         // Regular user active.
         $record->sid          = md5('session5');
         $record->userid       = $user1->id;
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 30;
-        $r5 = $DB->insert_record('sessions', $record);
+        $DB->insert_record('sessions', $record);
 
         // Regular user not active.
         $record->sid          = md5('session6');
         $record->userid       = $user1->id;
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 60 * 20;
-        $r6 = $DB->insert_record('sessions', $record);
+        $DB->insert_record('sessions', $record);
 
         // Current user active.
         $record->sid          = md5('session7');
         $record->userid       = 0;
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 30;
-        $r7 = $DB->insert_record('sessions', $record);
+        $DB->insert_record('sessions', $record);
 
         // Current user not active.
         $record->sid          = md5('session8');
         $record->userid       = 0;
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 60 * 20;
-        $r8 = $DB->insert_record('sessions', $record);
+        $DB->insert_record('sessions', $record);
+
+    }
+
+    /**
+     * Test that the plugin can retrieve all current session from DB.
+     */
+    public function test_can_get_all_active_sessions() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $this->generate_sessions();
+
+        $r1 = $DB->get_record('sessions', array('sid' => md5('session1')));
+        $r3 = $DB->get_record('sessions', array('sid' => md5('session3')));
+        $r5 = $DB->get_record('sessions', array('sid' => md5('session5')));
+        $r7 = $DB->get_record('sessions', array('sid' => md5('session7')));
 
         $activesessions = $this->authplugin->get_active_sessions_rs();
 
@@ -313,10 +326,10 @@ class auth_ip_testcase extends advanced_testcase {
 
 
         $this->assertEquals(4, count($actuallist));
-        $this->assertTrue(array_key_exists($r1, $actuallist));
-        $this->assertTrue(array_key_exists($r3, $actuallist));
-        $this->assertTrue(array_key_exists($r5, $actuallist));
-        $this->assertTrue(array_key_exists($r7, $actuallist));
+        $this->assertTrue(array_key_exists($r1->id, $actuallist));
+        $this->assertTrue(array_key_exists($r3->id, $actuallist));
+        $this->assertTrue(array_key_exists($r5->id, $actuallist));
+        $this->assertTrue(array_key_exists($r7->id, $actuallist));
     }
 
 
