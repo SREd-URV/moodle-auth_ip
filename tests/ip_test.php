@@ -311,9 +311,12 @@ class auth_ip_testcase extends advanced_testcase {
 
         $activesessions->close();
 
-        $expectedcount = 4;
-        $actualcount = count($actuallist);
-        $this->assertEquals($expectedcount, $actualcount);
+
+        $this->assertEquals(4, count($actuallist));
+        $this->assertTrue(array_key_exists($r1, $actuallist));
+        $this->assertTrue(array_key_exists($r3, $actuallist));
+        $this->assertTrue(array_key_exists($r5, $actuallist));
+        $this->assertTrue(array_key_exists($r7, $actuallist));
     }
 
 }

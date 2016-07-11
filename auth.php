@@ -182,7 +182,7 @@ class auth_plugin_ip extends auth_plugin_manual {
 
         $sql = "SELECT s.id, s.sid, s.userid, s.timecreated, s.timemodified, s.firstip, s.lastip
                 FROM {sessions} s
-                WHERE s.timemodified < :activebefore";
+                WHERE s.timemodified > :activebefore";
 
         $params = array(
             'activebefore' => time() - $CFG->sessiontimeout,
