@@ -223,4 +223,97 @@ class auth_ip_testcase extends advanced_testcase {
         );
     }
 
+    /**
+     * Test that the plugin can retrieve all current session from DB.
+     */
+    public function test_can_get_all_active_sessions() {
+        global $CFG, $DB, $USER;
+
+        $this->resetAfterTest();
+
+        $this->setAdminUser();
+        $adminid = $USER->id;
+        $this->setGuestUser();
+        $guestid = $USER->id;
+        $user1 = $this->getDataGenerator()->create_user();
+
+        $this->setUser(0);
+
+        $CFG->sessiontimeout = 60 * 10;
+
+        $record = new \stdClass();
+        $record->state = 0;
+        $record->firstip = $record->lastip = '10.0.0.1';
+
+        // Admin active.
+        $record->sid          = md5('session1');
+        $record->sessdata     = null;
+        $record->userid       = $adminid;
+        $record->timecreated  = time() - 60 * 60;
+        $record->timemodified = time() - 30;
+        $r1 = $DB->insert_record('sessions', $record);
+
+        // Admin not active.
+        $record->sid          = md5('session2');
+        $record->userid       = $adminid;
+        $record->timecreated  = time() - 60 * 60;
+        $record->timemodified = time() - 60 * 20;
+        $r2 = $DB->insert_record('sessions', $record);
+
+        // Guest active.
+        $record->sid          = md5('session3');
+        $record->userid       = $guestid;
+        $record->timecreated  = time() - 60 * 60;
+        $record->timemodified = time() - 30;
+        $r3 = $DB->insert_record('sessions', $record);
+
+        // Guest not active.
+        $record->sid          = md5('session4');
+        $record->userid       = $guestid;
+        $record->timecreated  = time() - 60 * 60;
+        $record->timemodified = time() - 60 * 20;
+        $r4 = $DB->insert_record('sessions', $record);
+
+        // Regular user active.
+        $record->sid          = md5('session5');
+        $record->userid       = $user1->id;
+        $record->timecreated  = time() - 60 * 60;
+        $record->timemodified = time() - 30;
+        $r5 = $DB->insert_record('sessions', $record);
+
+        // Regular user not active.
+        $record->sid          = md5('session6');
+        $record->userid       = $user1->id;
+        $record->timecreated  = time() - 60 * 60;
+        $record->timemodified = time() - 60 * 20;
+        $r6 = $DB->insert_record('sessions', $record);
+
+        // Current user active.
+        $record->sid          = md5('session7');
+        $record->userid       = 0;
+        $record->timecreated  = time() - 60 * 60;
+        $record->timemodified = time() - 30;
+        $r7 = $DB->insert_record('sessions', $record);
+
+        // Current user not active.
+        $record->sid          = md5('session8');
+        $record->userid       = 0;
+        $record->timecreated  = time() - 60 * 60;
+        $record->timemodified = time() - 60 * 20;
+        $r8 = $DB->insert_record('sessions', $record);
+
+        $activesessions = $this->authplugin->get_active_sessions_rs();
+
+        $actuallist = array();
+        foreach ($activesessions as $session) {
+            $actuallist[$session->id] = $session;
+        }
+
+        $activesessions->close();
+
+        $expectedcount = 4;
+        $actualcount = count($actuallist);
+        $this->assertEquals($expectedcount, $actualcount);
+    }
+
 }

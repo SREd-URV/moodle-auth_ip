@@ -172,4 +172,22 @@ class auth_plugin_ip extends auth_plugin_manual {
         return $inlist;
     }
 
+    /**
+     * Return a record set of all active user sessions.
+     *
+     * @return moodle_recordset A moodle_recordset instance of active sessions.
+     */
+    public function get_active_sessions_rs() {
+        global $CFG, $DB;
+
+        $sql = "SELECT s.id, s.sid, s.userid, s.timecreated, s.timemodified, s.firstip, s.lastip
+                FROM {sessions} s
+                WHERE s.timemodified < :activebefore";
+
+        $params = array(
+            'activebefore' => time() - $CFG->sessiontimeout,
+        );
+
+        return $DB->get_recordset_sql($sql, $params);
+    }
 }
