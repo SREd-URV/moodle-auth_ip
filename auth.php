@@ -205,7 +205,7 @@ class auth_plugin_ip extends auth_plugin_manual {
             return false;
         }
 
-        if ($this->is_ip_in_list($this->config->valid_ips, $session->lastip)) {
+        if (self::is_ip_in_list($this->config->valid_ips, $session->lastip)) {
             return false;
         }
 
