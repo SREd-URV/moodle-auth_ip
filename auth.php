@@ -239,17 +239,33 @@ class auth_plugin_ip extends auth_plugin_manual {
 
     /**
      * Kill all required active sessions.
+     *
+     * @param \progress_bar|null $progressbar Optional progress bar instance for using in UI.
      */
-    public function kill_active_sessions() {
+    public function kill_active_sessions(progress_bar $progressbar = null) {
         $sessions = $this->get_active_sessions_recordset();
+        $sessionscount = $this->count_active_sessions();
+
+        $done = 0;
+        $strinprogress = get_string('auth_iplogoutinprogress', 'auth_ip');
 
         foreach ($sessions as $session) {
             if ($this->should_kill_session($session)) {
                 \core\session\manager::kill_session($session->sid);
+
+                if (!is_null($progressbar)) {
+                    $done++;
+                    $donepercent = floor(min($done, $sessionscount) / $sessionscount * 100);
+                    $progressbar->update_full($donepercent, $strinprogress);
+                }
             }
         }
 
         $sessions->close();
+
+        if (!is_null($progressbar)) {
+            $progressbar->update_full(100, get_string('auth_iplogoutdone', 'auth_ip', $done));
+        }
     }
 
 }

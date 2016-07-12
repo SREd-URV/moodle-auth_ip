@@ -75,4 +75,61 @@ class auth_ip_renderer extends plugin_renderer_base {
         return $message;
     }
 
+    /**
+     * Get a link to a page for logging out all active users.
+     *
+     * @return string HTML link.
+     */
+    public static function get_user_logout_page_link() {
+        $url = new moodle_url('/auth/ip/users.php');
+        $link = html_writer::link($url, get_string('auth_iplogoutlink', 'auth_ip'));
+
+        return $link;
+    }
+
+    /**
+     * Get description for the Log out active users page.
+     *
+     * @return string
+     */
+    public static function get_settings_user_logout_page_link_description() {
+        global $OUTPUT;
+
+        return $OUTPUT->notification(get_string('auth_iplogoutuserstext', 'auth_ip', self::get_user_logout_page_link()), 'info');
+    }
+
+    /**
+     * Get a error message to display.
+     *
+     * @return string
+     */
+    public static function get_your_ip_not_in_range_error_message() {
+        global $OUTPUT;
+
+        $html = '';
+
+        $config = get_config('auth_ip');
+        $ip = getremoteaddr();
+        $list = isset($config->valid_ips) ? $config->valid_ips : '';
+
+        if (!auth_plugin_ip::is_ip_in_list($list, $ip)) {
+            $html = $OUTPUT->notification(get_string('auth_iplogoutwarning', 'auth_ip', $ip), 'error');
+        }
+
+        return $html;
+    }
+
+    /**
+     * Get description for the Log out active users page.
+     *
+     * @return string
+     */
+    public function get_user_logout_description($activeusers) {
+        $html = '';
+        $html .= html_writer::tag('p', get_string('auth_iplogoutdescription', 'auth_ip', $activeusers),
+            array('class' => 'auth-ip-logout-descr'));
+
+        return $html;
+    }
+
 }

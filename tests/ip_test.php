@@ -297,7 +297,6 @@ class auth_ip_testcase extends advanced_testcase {
         $record->timecreated  = time() - 60 * 60;
         $record->timemodified = time() - 60 * 20;
         $DB->insert_record('sessions', $record);
-
     }
 
     /**

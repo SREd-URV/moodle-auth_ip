@@ -25,12 +25,26 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+$url = new moodle_url('/auth/ip/users.php');
+$ADMIN->add('authsettings', new admin_externalpage('auth_ip_sessions',
+    get_string('auth_iplogoutheading', 'auth_ip'), $url->out(), 'moodle/site:config', true));
+
 if ($ADMIN->fulltree) {
 
     require_once($CFG->dirroot . '/auth/ip/renderer.php');
+    require_once($CFG->dirroot . '/auth/ip/auth.php');
 
     $options = array(get_string('no'), get_string('yes'));
     $placeholders = implode(', ', array_keys(auth_ip_renderer::get_placeholders_data()));
+    $auth = new auth_plugin_ip();
+
+    if (isset($auth->config->check_before_login) && !empty($auth->config->check_before_login)) {
+        $settings->add(new admin_setting_heading('auth_ip/warning', '',
+            auth_ip_renderer::get_your_ip_not_in_range_error_message()));
+
+        $settings->add(new admin_setting_heading('auth_ip/logoutuserstext', '',
+            auth_ip_renderer::get_settings_user_logout_page_link_description()));
+    }
 
     $settings->add(new admin_setting_configiplist('auth_ip/valid_ips',
         new lang_string('auth_ipvalidips', 'auth_ip'),
