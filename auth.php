@@ -173,12 +173,12 @@ class auth_plugin_ip extends auth_plugin_manual {
     }
 
     /**
-     * Return a record set of all active user sessions.
+     * Return SQL data to get all active user sessions from DB.
      *
-     * @return moodle_recordset A moodle_recordset instance of active sessions.
+     * @return array Array of the first element is SQL and the second element is params.
      */
-    public function get_active_sessions_rs() {
-        global $CFG, $DB;
+    protected function get_active_sessions_sql_data() {
+        global $CFG;
 
         $sql = "SELECT s.id, s.sid, s.userid, s.timecreated, s.timemodified, s.firstip, s.lastip
                 FROM {sessions} s
@@ -188,7 +188,32 @@ class auth_plugin_ip extends auth_plugin_manual {
             'activebefore' => time() - $CFG->sessiontimeout,
         );
 
-        return $DB->get_recordset_sql($sql, $params);
+        return array($sql, $params);
+    }
+
+    /**
+     * Return a record set of all active user sessions.
+     *
+     * @return moodle_recordset A moodle_recordset instance of active sessions.
+     */
+    public function get_active_sessions_rs() {
+        global $DB;
+        $sqldata = $this->get_active_sessions_sql_data();
+
+        return $DB->get_recordset_sql($sqldata[0], $sqldata[1]);
+    }
+
+    /**
+     * Return a number of currently active user sessions.
+     *
+     * @return int A number of sessions.
+     */
+    public function count_active_sessions() {
+        global $DB;
+
+        $sqldata = $this->get_active_sessions_sql_data();
+
+        return $DB->count_records_select('sessions', 'timemodified > :activebefore', $sqldata[1]);
     }
 
     /**

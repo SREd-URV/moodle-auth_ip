@@ -398,4 +398,19 @@ class auth_ip_testcase extends advanced_testcase {
         $this->assertTrue(array_key_exists(md5('session8'), $sessions));
     }
 
+    /**
+     * Test that the plugin can count all active sessions.
+     */
+    public function test_count_of_active_sessions() {
+        $this->resetAfterTest();
+        $this->generate_sessions();
+
+        $expected = 4;
+        $actual = $this->authplugin->count_active_sessions();
+
+        $this->assertTrue(is_int($actual));
+        $this->assertEquals($expected, $actual);
+
+    }
+
 }
