@@ -315,7 +315,7 @@ class auth_ip_testcase extends advanced_testcase {
         $r5 = $DB->get_record('sessions', array('sid' => md5('session5')));
         $r7 = $DB->get_record('sessions', array('sid' => md5('session7')));
 
-        $activesessions = $this->authplugin->get_active_sessions_rs();
+        $activesessions = $this->authplugin->get_active_sessions_recordset();
 
         $actuallist = array();
         foreach ($activesessions as $session) {

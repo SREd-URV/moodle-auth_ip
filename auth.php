@@ -196,7 +196,7 @@ class auth_plugin_ip extends auth_plugin_manual {
      *
      * @return moodle_recordset A moodle_recordset instance of active sessions.
      */
-    public function get_active_sessions_rs() {
+    public function get_active_sessions_recordset() {
         global $DB;
         $sqldata = $this->get_active_sessions_sql_data();
 
@@ -241,7 +241,7 @@ class auth_plugin_ip extends auth_plugin_manual {
      * Kill all required active sessions.
      */
     public function kill_active_sessions() {
-        $sessions = $this->get_active_sessions_rs();
+        $sessions = $this->get_active_sessions_recordset();
 
         foreach ($sessions as $session) {
             if ($this->should_kill_session($session)) {
