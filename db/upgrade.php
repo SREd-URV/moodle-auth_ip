@@ -15,21 +15,44 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * IP authentication plugin upgrade code.
  *
  * @package    auth
  * @subpackage ip
+ * @copyright  2016 Dmitrii Metelkin (dmitriim@catalyst-au.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @author     Robert Boloc <robert.boloc@urv.cat>
- * @author     Jordi Pujol-Ahulló <jordi.pujol@urv.cat>
- * @copyright 2013 onwards Servei de Recursos Educatius (http://www.sre.urv.cat)
  */
-
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016070701;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2015051100;        // Requires this Moodle version (2.4)
-$plugin->component = 'auth_ip';         // Full name of the plugin (used for diagnostics)
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2.0 (Build: 2016070700)';
+/**
+ * Perform upgrade.
+ *
+ * @param int $oldversion the version we are upgrading from
+ * @return bool result
+ */
+function xmldb_auth_ip_upgrade($oldversion) {
 
+    if ($oldversion < 2016070701) {
+
+        $validips = get_config('auth_ip', 'valid_ips');
+
+        if (!empty($validips)) {
+            $updatedvalidips = '';
+            $ips = explode(",", $validips);
+
+            foreach ($ips as $ip) {
+                $ip = trim($ip);
+
+                if (!empty($ip)) {
+                    $updatedvalidips .= $ip . "\r\n";
+                }
+            }
+
+            set_config('valid_ips', $updatedvalidips, 'auth_ip');
+        }
+
+        upgrade_plugin_savepoint(true, 2016070700, 'auth', 'ip');
+    }
+
+    return true;
+}
