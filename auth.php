@@ -55,7 +55,7 @@ class auth_plugin_ip extends auth_plugin_manual {
         global $DB, $CFG;
         if (($user = $DB->get_record('user', array('username'=>$username, 'mnethostid'=>$CFG->mnet_localhost_id)))) {
             // Check if IP is one of the restricted ones.
-            $userIp = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+            $userIp = getremoteaddr();
 
             if (isset($userIp) && $this->is_ip_valid($userIp)) {
                 return validate_internal_user_password($user, $password);
