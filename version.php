@@ -27,7 +27,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017020800;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version   = 2018053000;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2012120300;        // Requires this Moodle version (2.4)
 $plugin->component = 'auth_ip';         // Full name of the plugin (used for diagnostics)
 $plugin->maturity  = MATURITY_STABLE;
