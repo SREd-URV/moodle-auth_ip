@@ -124,21 +124,6 @@ class auth_plugin_ip extends auth_plugin_manual {
     }
 
     /**
-     * Prints a form for configuring this authentication plugin.
-     *
-     * This function is called from admin/auth.php, and outputs a full page with
-     * a form for configuring this plugin.
-     *
-     * @param array $config An object containing all the data for this page.
-     * @param string $error
-     * @param array $user_fields
-     * @return void
-     */
-    function config_form($config, $error, $user_fields) {
-        include 'config.html';
-    }
-
-    /**
      * Updates the list of IPs and sends a notification by email.
      *
      * @param object $config configuration settings
