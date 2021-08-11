@@ -22,7 +22,7 @@ require_once($CFG->dirroot.'/auth/ip/auth.php');
 class auth_ip_testcase extends advanced_testcase {
     protected $authplugin;
 
-    protected function setUp() {
+    protected function setUp() : void {
         $this->authplugin = new auth_plugin_ip();
     }
 
