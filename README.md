@@ -1,4 +1,4 @@
-[![Moodle Plugin CI](https://github.com/SREd-URV/moodle-auth_ip/actions/workflows/moodle-ci.yml/badge.svg)](https://github.com/SREd-URV/moodle-auth_ip/actions/workflows/moodle-ci.yml)
+[![Moodle Plugin CI](https://github.com/SREd-URV/moodle-auth_ip/actions/workflows/moodle-ci.yml/badge.svg)](https://github.com/SREd-URV/moodle-auth_ip/actions/workflows/moodle-ci.yml) [![Releasing in the Plugins directory](https://github.com/SREd-URV/moodle-auth_ip/actions/workflows/moodle-release.yml/badge.svg)](https://github.com/SREd-URV/moodle-auth_ip/actions/workflows/moodle-release.yml)
 
 Authentication plugin restricted by IP
 ===
