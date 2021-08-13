@@ -1,3 +1,5 @@
+[![Moodle Plugin CI](https://github.com/SREd-URV/moodle-auth_ip/actions/workflows/moodle-ci.yml/badge.svg)](https://github.com/SREd-URV/moodle-auth_ip/actions/workflows/moodle-ci.yml)
+
 Authentication plugin restricted by IP
 ===
 
