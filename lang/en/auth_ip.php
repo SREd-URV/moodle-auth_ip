@@ -31,3 +31,4 @@ $string['auth_ipmailsubject'] = 'IPs changed on authentication plugin by IP';
 $string['auth_ipmailtext'] = 'Accepted IPs for the authentication plugin by IP have been updated.';
 $string['auth_ipvalidips'] = 'Valid IPs';
 $string['pluginname'] = 'Authentication by IP';
+$string['privacy:metadata'] = 'The Authentication by IP plugin does not store any personal data.';

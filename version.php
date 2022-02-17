@@ -27,8 +27,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021081100;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version   = 2022021700;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires  = 2017051500;        // Requires this Moodle version (3.3) for changes in settings.php.
 $plugin->component = 'auth_ip';         // Full name of the plugin (used for diagnostics)
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '2021081100';
+$plugin->release   = '2022021700';
