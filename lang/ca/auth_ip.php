@@ -31,3 +31,4 @@ $string['auth_ipmailsubject'] = 'Plugin autenticació restringit per IP: IPs can
 $string['auth_ipmailtext'] = 'S\'han actualitzat les IPs acceptades pel plugin d\'autenticació restringit per IP';
 $string['auth_ipvalidips'] = 'IPs vàlides';
 $string['pluginname'] = 'Autenticació per IP';
+$string['privacy:metadata'] = 'El plugin Autenticació per IP no emmagatzema cap dada personal.';
